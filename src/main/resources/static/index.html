@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Test - WebSocket vs SSE</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Performance Test - WebSocket vs SSE</h1>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab('websocket')">WebSocket (STOMP)</button>
+            <button class="tab-button" onclick="openTab('sse')">SSE</button>
+        </div>
+
+        <!-- WebSocket Tab -->
+        <div id="websocket" class="tab-content active">
+            <h2>WebSocket (STOMP) Test</h2>
+            <div class="controls">
+                <button id="ws-connect" onclick="wsConnect()">Connect</button>
+                <button id="ws-disconnect" onclick="wsDisconnect()" disabled>Disconnect</button>
+                <button onclick="wsTriggerBroadcast()">Trigger Broadcast (via STOMP)</button>
+            </div>
+            <div class="status">
+                <span>Status: <span id="ws-status">Disconnected</span></span>
+            </div>
+            <div class="message-box">
+                <h3>Messages from /topic/response</h3>
+                <div id="ws-messages" class="messages"></div>
+            </div>
+        </div>
+
+        <!-- SSE Tab -->
+        <div id="sse" class="tab-content">
+            <h2>Server-Sent Events Test</h2>
+            <div class="controls">
+                <button id="sse-connect" onclick="sseConnect()">Connect to /sse/response</button>
+                <button id="sse-disconnect" onclick="sseDisconnect()" disabled>Disconnect</button>
+                <button onclick="sseTriggerBroadcast()">Trigger Broadcast (POST /api/broadcast)</button>
+            </div>
+            <div class="status">
+                <span>Status: <span id="sse-status">Disconnected</span></span>
+            </div>
+            <div class="message-box">
+                <h3>Messages from /sse/response</h3>
+                <div id="sse-messages" class="messages"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/websocket-client.js"></script>
+    <script src="/js/sse-client.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>

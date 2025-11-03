@@ -1,0 +1,228 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    padding: 30px;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+h2 {
+    color: #667eea;
+    margin-bottom: 20px;
+}
+
+h3 {
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 16px;
+    color: #666;
+    transition: all 0.3s;
+}
+
+.tab-button:hover {
+    color: #667eea;
+}
+
+.tab-button.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.controls {
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #f5f5f5;
+    border-radius: 8px;
+}
+
+.controls button {
+    padding: 10px 20px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.controls button:hover {
+    background: #5568d3;
+}
+
+.controls button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.controls input[type="text"] {
+    padding: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    width: 300px;
+}
+
+.status {
+    padding: 15px;
+    background: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.status span {
+    font-weight: 500;
+}
+
+.message-box {
+    margin-top: 20px;
+}
+
+.messages {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    background: #fafafa;
+}
+
+.message {
+    padding: 10px;
+    margin-bottom: 10px;
+    background: white;
+    border-left: 3px solid #667eea;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.message .time {
+    color: #999;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.message .content {
+    color: #333;
+    word-wrap: break-word;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.metric-card {
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card h3 {
+    color: #667eea;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.metric-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.metric-item:last-child {
+    border-bottom: none;
+}
+
+.metric-label {
+    color: #666;
+    font-weight: 500;
+}
+
+.metric-value {
+    color: #333;
+    font-weight: 600;
+}
+
+.connected {
+    color: #4caf50;
+}
+
+.disconnected {
+    color: #f44336;
+}
+
+.running {
+    color: #2196f3;
+}
+
+.stopped {
+    color: #9e9e9e;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    .controls input[type="text"] {
+        width: 100%;
+    }
+
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+}

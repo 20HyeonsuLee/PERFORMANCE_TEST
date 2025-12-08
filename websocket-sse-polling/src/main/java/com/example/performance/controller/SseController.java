@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SseController {
 
     private static final Logger logger = LoggerFactory.getLogger(SseController.class);
-    private static final long SSE_TIMEOUT = 30 * 60 * 1000L; // 30 minutes
+    private static final long SSE_TIMEOUT = 30 * 60 * 1000L;
 
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
 

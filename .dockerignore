@@ -1,0 +1,35 @@
+# Git
+.git
+.gitignore
+.github
+
+# IDE
+.idea
+.vscode
+*.iml
+
+# Build
+**/build/
+**/target/
+**/out/
+**/.gradle/
+
+# Logs
+**/*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs
+**/docs/
+**/*.md
+!README.md
+
+# Tests
+**/test-results/
+**/reports/
+
+# Other modules (only include websocket-sse-polling for its build)
+redis-kafka/src/
+lock/src/

@@ -167,38 +167,3 @@ jobs:
 
           # Start with previous version
           docker-compose up -d
-
-  notify:
-    needs: [build-and-test, build-docker-image, deploy-to-server]
-    runs-on: ubuntu-latest
-    if: always()
-
-    steps:
-    - name: Notify Slack on success
-      if: ${{ needs.deploy-to-server.result == 'success' }}
-      uses: 8398a7/action-slack@v3
-      with:
-        status: success
-        text: |
-          ✅ WebSocket-SSE-Polling 배포 성공
-          Branch: ${{ github.ref_name }}
-          Commit: ${{ github.sha }}
-          Author: ${{ github.actor }}
-        webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-    - name: Notify Slack on failure
-      if: ${{ needs.deploy-to-server.result == 'failure' || needs.build-and-test.result == 'failure' || needs.build-docker-image.result == 'failure' }}
-      uses: 8398a7/action-slack@v3
-      with:
-        status: failure
-        text: |
-          ❌ WebSocket-SSE-Polling 배포 실패
-          Branch: ${{ github.ref_name }}
-          Commit: ${{ github.sha }}
-          Author: ${{ github.actor }}
-          Job: ${{ needs.deploy-to-server.result == 'failure' && 'deploy-to-server' || needs.build-docker-image.result == 'failure' && 'build-docker-image' || 'build-and-test' }}
-        webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

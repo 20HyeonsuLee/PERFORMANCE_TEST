@@ -115,14 +115,20 @@ jobs:
         script: |
           cd /opt/${{ env.MODULE_NAME }}
 
+          # Save current image as backup (if exists)
+          if docker images ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest -q | grep -q .; then
+            docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest \
+                       ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:previous || true
+          fi
+
           # Pull latest image
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
 
           # Stop and remove old container
-          docker-compose down || true
+          docker compose down || true
 
           # Start new container
-          docker-compose up -d
+          docker compose up -d
 
           # Clean up old images
           docker image prune -f
@@ -161,12 +167,14 @@ jobs:
           echo "🔄 Rolling back to previous version..."
 
           # Stop current container
-          docker-compose down
+          docker compose down || true
 
-          # Restore previous image (tagged as 'previous')
-          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:previous || true
-          docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:previous \
-                     ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest || true
-
-          # Start with previous version
-          docker-compose up -d
+          # Check if previous image exists
+          if docker images ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:previous -q | grep -q .; then
+            echo "Previous image found, restoring..."
+            docker tag ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:previous \
+                       ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+            docker compose up -d
+          else
+            echo "⚠️  No previous image found. This might be the first deployment."
+          fi

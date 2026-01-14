@@ -1,10 +1,14 @@
-package com.example.performance.controller.dto;
+package com.example.performance.dto;
 
+import java.time.Instant;
 import java.util.List;
 
-public record Message(List<InnerMessage> messages) {
+public record LoadTestResponse(
+        Instant timestamp,
+        List<InnerMessage> messages
+) {
 
-    private static final List<String> playerNames = List.of(
+    private static final List<String> playerNames = java.util.List.of(
             "host",
             "guest1",
             "guest2",
@@ -15,11 +19,11 @@ public record Message(List<InnerMessage> messages) {
             "guest7"
     );
 
-    public static Message createTestMessage() {
+    public static LoadTestResponse createTestMessage() {
         final List<InnerMessage> messages = playerNames.stream()
                 .map(playerName -> new InnerMessage(playerName, 0, 0))
                 .toList();
-        return new Message(messages);
+        return new LoadTestResponse(Instant.now(), messages);
     }
 
     private record InnerMessage(String playerName, int position, int speed) {

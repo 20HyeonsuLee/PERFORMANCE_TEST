@@ -2,10 +2,10 @@ spring:
   application:
     name: redis-kafka-performance
 
-  # Kafka Configuration
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
+      enable-auto-commit: false
       group-id: performance-test-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -28,7 +28,6 @@ spring:
       concurrency: 3
       ack-mode: batch
 
-  # Redis Configuration
   data:
     redis:
       host: localhost
@@ -41,7 +40,6 @@ spring:
           min-idle: 2
           max-wait: -1ms
 
-# Actuator Configuration for Prometheus
 management:
   endpoints:
     web:

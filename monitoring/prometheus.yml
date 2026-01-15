@@ -12,6 +12,7 @@ scrape_configs:
     scrape_interval: 10s
 
   - job_name: 'performance'
+    metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['43.200.188.232:8080']
     scrape_interval: 10s

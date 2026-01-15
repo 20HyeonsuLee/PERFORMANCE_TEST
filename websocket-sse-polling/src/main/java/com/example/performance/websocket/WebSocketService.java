@@ -21,6 +21,7 @@ public class WebSocketService {
     @Async
     public void broadcast(BroadcastConfig config) {
         messageCount.set(0);
+        log.info("broadcast config: {}", config);
 
         final long startTime = System.currentTimeMillis();
         final long endTime = startTime + (config.duration() * 1000);

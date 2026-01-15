@@ -1,6 +1,6 @@
 package com.example.performance.metrics;
 
-import com.example.performance.controller.SseController;
+import com.example.performance.sse.SseController;
 import com.example.performance.websocket.WebSocketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

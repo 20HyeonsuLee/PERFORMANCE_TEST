@@ -1,6 +1,5 @@
 package com.example.performance.websocket.utils;
 
-import java.lang.reflect.Type;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaders;
@@ -10,42 +9,38 @@ import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 @Slf4j
 public class SessionHandler extends StompSessionHandlerAdapter {
 
-    public SessionHandler() {
-        super();
+    @Override
+    public void handleFrame(final StompHeaders headers, final Object payload) {
+        log.debug("Received frame: {}", payload);
     }
 
     @Override
-    public Type getPayloadType(StompHeaders headers) {
-        return super.getPayloadType(headers);
-    }
-
-    @Override
-    public void handleFrame(StompHeaders headers, Object payload) {
-        log.info("Received frame {}", payload);
-        super.handleFrame(headers, payload);
-    }
-
-    @Override
-    public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
-        super.afterConnected(session, connectedHeaders);
-    }
-
-    @Override
-    public void handleTransportError(StompSession session, Throwable exception) {
-        log.error("STOMP TRANSPORT ERROR: " + exception.getMessage());
-        throw new RuntimeException(exception);
+    public void handleTransportError(final StompSession session, final Throwable exception) {
+        log.error("STOMP transport error: {}", exception.getMessage());
+        throw new StompTransportException(exception);
     }
 
     @Override
     public void handleException(
-            StompSession session,
-            StompCommand command,
-            StompHeaders headers,
-            byte[] payload,
-            Throwable exception
+            final StompSession session,
+            final StompCommand command,
+            final StompHeaders headers,
+            final byte[] payload,
+            final Throwable exception
     ) {
-        log.error("STOMP EXCEPTION: " + exception.getMessage());
-        throw new RuntimeException(exception);
+        log.error("STOMP exception on command {}: {}", command, exception.getMessage());
+        throw new StompProtocolException(command, exception);
     }
 
+    public static class StompTransportException extends RuntimeException {
+        public StompTransportException(final Throwable cause) {
+            super("STOMP transport error", cause);
+        }
+    }
+
+    public static class StompProtocolException extends RuntimeException {
+        public StompProtocolException(final StompCommand command, final Throwable cause) {
+            super("STOMP protocol error on command: " + command, cause);
+        }
+    }
 }

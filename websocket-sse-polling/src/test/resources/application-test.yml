@@ -1,0 +1,14 @@
+test:
+  pushgateway:
+    # Pushgateway 활성화 여부
+    enabled: false  # true로 변경하면 테스트 종료 시 자동으로 push
+    # Pushgateway URL
+    url: http://localhost:9091
+
+# Prometheus 스크랩 대기 시간 (밀리초)
+# Pushgateway를 사용하지 않을 경우, 테스트가 이 시간만큼 대기
+management:
+  metrics:
+    export:
+      prometheus:
+        enabled: true

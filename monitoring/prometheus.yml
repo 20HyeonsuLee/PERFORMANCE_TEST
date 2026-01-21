@@ -17,6 +17,13 @@ scrape_configs:
       - targets: ['43.200.188.232:8080']
     scrape_interval: 10s
 
+  # Pushgateway (for test metrics)
+  - job_name: 'pushgateway'
+    honor_labels: true
+    static_configs:
+      - targets: ['pushgateway:9091']
+    scrape_interval: 10s
+
   # Prometheus self-monitoring
   - job_name: 'prometheus'
     static_configs:

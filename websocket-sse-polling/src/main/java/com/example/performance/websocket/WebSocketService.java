@@ -15,68 +15,72 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 public class WebSocketService {
 
+    private static final String TOPIC_MESSAGES = "/topic/messages";
+
     private final SimpMessagingTemplate messagingTemplate;
     private final AtomicLong messageCount = new AtomicLong(0);
 
     @Async
-    public void broadcast(BroadcastConfig config) {
+    public void broadcast(final BroadcastConfig config) {
+        validateConfig(config);
         messageCount.set(0);
         log.info("broadcast config: {}", config);
 
-        final long startTime = System.currentTimeMillis();
-        final long endTime = startTime + (config.duration() * 1000);
+        final long endTime = config.calculateEndTime(System.currentTimeMillis());
 
-        if (config.tps() != null) {
-            broadcastByTps(config.tps(), endTime);
-        } else if (config.delay() != null) {
-            broadcastByDelay(config.delay(), endTime);
-        } else {
-            throw new IllegalArgumentException("Either tps or delay must be provided");
+        if (config.isTpsStrategy()) {
+            broadcastByTps(config.calculateIntervalMillis(), endTime);
+            return;
         }
 
+        broadcastByDelay(config.delay(), endTime);
         log.info("WebSocket broadcast completed. Total messages sent: {}", messageCount.get());
     }
 
-    private void broadcastByTps(long tps, long endTime) {
-        final long intervalMillis = 1000 / tps;
-
-        while (System.currentTimeMillis() < endTime) {
-            final long iterationStart = System.currentTimeMillis();
-
-            sendMessage();
-
-            final long elapsed = System.currentTimeMillis() - iterationStart;
-            final long sleepTime = intervalMillis - elapsed;
-
-            if (sleepTime > 0) {
-                try {
-                    Thread.sleep(sleepTime);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    log.error("Broadcast interrupted", e);
-                    break;
-                }
-            }
+    private void validateConfig(final BroadcastConfig config) {
+        if (!config.hasValidStrategy()) {
+            throw new IllegalArgumentException("Either tps or delay must be provided, but not both");
         }
     }
 
-    private void broadcastByDelay(long delay, long endTime) {
+    private void broadcastByTps(final long intervalMillis, final long endTime) {
+        while (System.currentTimeMillis() < endTime) {
+            final long iterationStart = System.currentTimeMillis();
+            sendMessage();
+            sleepForRemainingInterval(intervalMillis, iterationStart);
+        }
+    }
+
+    private void sleepForRemainingInterval(final long intervalMillis, final long iterationStart) {
+        final long elapsed = System.currentTimeMillis() - iterationStart;
+        final long sleepTime = intervalMillis - elapsed;
+
+        if (sleepTime <= 0) {
+            return;
+        }
+
+        sleepQuietly(sleepTime);
+    }
+
+    private void broadcastByDelay(final long delay, final long endTime) {
         while (System.currentTimeMillis() < endTime) {
             sendMessage();
+            sleepQuietly(delay);
+        }
+    }
 
-            try {
-                Thread.sleep(delay);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                log.error("Broadcast interrupted", e);
-                break;
-            }
+    private void sleepQuietly(final long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("Broadcast interrupted");
         }
     }
 
     private void sendMessage() {
-        final LoadTestResponse loadTestResponse = LoadTestResponse.createTestMessage();
-        messagingTemplate.convertAndSend("/topic/messages", loadTestResponse);
+        final LoadTestResponse response = LoadTestResponse.createTestMessage();
+        messagingTemplate.convertAndSend(TOPIC_MESSAGES, response);
         messageCount.incrementAndGet();
     }
 

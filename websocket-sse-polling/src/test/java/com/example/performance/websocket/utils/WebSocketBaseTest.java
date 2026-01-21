@@ -1,9 +1,7 @@
 package com.example.performance.websocket.utils;
 
-import com.example.performance.ToxiproxyTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -15,10 +13,12 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 @Slf4j
-public abstract class WebSocketBaseTest extends ToxiproxyTest {
+public abstract class WebSocketBaseTest {
 
-    protected static final String WS_URL = "ws://" + toxiproxy.getHost() + ":" + toxiproxy.getMappedPort(8666) + "/ws";
+    protected static final String host = "43.200.188.232";
+    protected static final int port = 8080;
 
+    protected static final String WS_URL = String.format("ws://%s:%d/ws", host, port);
 
     protected StompSession createSession() {
         final WebSocketClient webSocketClient = new StandardWebSocketClient();

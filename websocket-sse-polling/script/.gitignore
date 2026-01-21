@@ -1,8 +1,0 @@
-# k6 output files
-*.json
-*.csv
-*.html
-results/
-
-# Logs
-*.log

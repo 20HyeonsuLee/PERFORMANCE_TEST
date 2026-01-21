@@ -1,7 +1,6 @@
 package com.example.performance.websocket;
 
 import com.example.performance.metrics.WebSocketMetricService;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
@@ -11,67 +10,100 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.support.ExecutorChannelInterceptor;
 import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class WebSocketOutboundMetricInterceptor implements ExecutorChannelInterceptor {
 
+    private static final String MESSAGE_ID_HEADER = "messageId";
+
     private final WebSocketMetricService webSocketMetricService;
 
     @Override
-    public Message<?> preSend(Message<?> message, MessageChannel channel) {
-        final var type = SimpMessageHeaderAccessor.getMessageType(message.getHeaders());
-        if (SimpMessageType.HEARTBEAT.equals(type)) {
+    public Message<?> preSend(final Message<?> message, final MessageChannel channel) {
+        if (isHeartbeat(message)) {
             return message;
         }
 
-        if (SimpMessageType.MESSAGE.equals(type)) {
-            try {
-                final MessageHeaderAccessor mutableAccessor = SimpMessageHeaderAccessor.getMutableAccessor(message);
-                mutableAccessor.setHeader("messageId", UUID.randomUUID().toString());
-                Message<?> headerMessage = MessageBuilder.createMessage(
-                        message.getPayload(),
-                        mutableAccessor.getMessageHeaders()
-                );
-                webSocketMetricService.startOutboundMessageTimer(headerMessage.getHeaders().get("messageId")
-                        .toString());
-                return headerMessage;
-            } catch (Exception e) {
-                log.error("WebSocket 아웃바운드 메시지 전송 시간 측정 시작 중 에러", e);
-            }
+        if (!isMessage(message)) {
+            return message;
         }
 
-        return message;
+        return attachMessageIdAndStartTimer(message);
+    }
+
+    private Message<?> attachMessageIdAndStartTimer(final Message<?> message) {
+        try {
+            final var mutableAccessor = SimpMessageHeaderAccessor.getMutableAccessor(message);
+            final String messageId = UUID.randomUUID().toString();
+            mutableAccessor.setHeader(MESSAGE_ID_HEADER, messageId);
+
+            final Message<?> headerMessage = MessageBuilder.createMessage(
+                    message.getPayload(),
+                    mutableAccessor.getMessageHeaders()
+            );
+            webSocketMetricService.startOutboundMessageTimer(messageId);
+            return headerMessage;
+        } catch (Exception exception) {
+            log.error("WebSocket 아웃바운드 메시지 전송 시간 측정 시작 중 에러", exception);
+            return message;
+        }
     }
 
     @Override
     public void afterMessageHandled(
-            Message<?> message,
-            MessageChannel channel,
-            MessageHandler handler,
-            Exception exception
+            final Message<?> message,
+            final MessageChannel channel,
+            final MessageHandler handler,
+            final Exception exception
     ) {
-        final var type = SimpMessageHeaderAccessor.getMessageType(message.getHeaders());
-        if (SimpMessageType.HEARTBEAT.equals(type)) {
+        if (isHeartbeat(message)) {
             return;
         }
 
-        if (SimpMessageType.MESSAGE.equals(type)) {
-            try {
-                final String timingId = message.getHeaders().get("messageId").toString();
-                webSocketMetricService.stopOutboundMessageTimer(timingId);
-            } catch (Exception e) {
-                log.error("WebSocket 아웃바운드 메시지 전송 시간 측정 완료 중 에러", e);
-            }
+        if (isMessage(message)) {
+            extractMessageId(message).ifPresent(this::stopOutboundTimer);
         }
 
+        incrementOutboundCounter();
+    }
+
+    private void stopOutboundTimer(final String messageId) {
+        try {
+            webSocketMetricService.stopOutboundMessageTimer(messageId);
+        } catch (Exception exception) {
+            log.error("WebSocket 아웃바운드 메시지 전송 시간 측정 완료 중 에러", exception);
+        }
+    }
+
+    private void incrementOutboundCounter() {
         try {
             webSocketMetricService.incrementOutboundMessage();
-        } catch (Exception e) {
-            log.error("WebSocket 아웃바운드 메트릭 수집 중 에러", e);
+        } catch (Exception exception) {
+            log.error("WebSocket 아웃바운드 메트릭 수집 중 에러", exception);
         }
+    }
+
+    private boolean isHeartbeat(final Message<?> message) {
+        return SimpMessageType.HEARTBEAT.equals(getMessageType(message));
+    }
+
+    private boolean isMessage(final Message<?> message) {
+        return SimpMessageType.MESSAGE.equals(getMessageType(message));
+    }
+
+    private SimpMessageType getMessageType(final Message<?> message) {
+        return SimpMessageHeaderAccessor.getMessageType(message.getHeaders());
+    }
+
+    private Optional<String> extractMessageId(final Message<?> message) {
+        return Optional.ofNullable(message.getHeaders().get(MESSAGE_ID_HEADER))
+                .filter(String.class::isInstance)
+                .map(String.class::cast);
     }
 }
